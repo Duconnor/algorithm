@@ -1,0 +1,51 @@
+
+public class BruteCollinearPoints {
+	private LineSegment[] segments;
+
+	public BruteCollinearPoints(Point[] points) {
+		if (points == null)
+			throw new IllegalArgumentException("Illegal Argument");
+		for (int i = 0; i < points.length; i++)
+			if (points[i] == null)
+				throw new IllegalArgumentException("Illegal Argument");
+		LineSegment[] tempsegments = new LineSegment[points.length];
+		int count = 0;
+		for (int a = 0; a < points.length; a++) {
+			for (int b = a+1; b < points.length; b++) {
+				for (int c = b+1; c < points.length; c++) {
+					for (int d = c+1; d < points.length; d++) {
+						if ((points[a].slopeTo(points[b])) == (points[c].slopeTo(points[d]))) {
+							Point minpoint = points[a];
+							if (minpoint.compareTo(points[b]) > 0)
+								minpoint = points[b];
+							if (minpoint.compareTo(points[c]) > 0)
+								minpoint = points[c];
+							if (minpoint.compareTo(points[d]) > 0)
+								minpoint = points[d];
+							Point maxpoint = points[a];
+							if (maxpoint.compareTo(points[b]) < 0)
+								maxpoint = points[b];
+							if (maxpoint.compareTo(points[c]) < 0)
+								maxpoint = points[c];
+							if (maxpoint.compareTo(points[d]) < 0)
+								maxpoint = points[d];
+							LineSegment line = new LineSegment(minpoint, maxpoint);
+							tempsegments[count] = line;
+						}
+					}
+				}
+			}
+		}
+		segments = new LineSegment[count];
+		for(int i=0;i<count;i++)
+			segments[i] = tempsegments[i];
+	}
+
+	public int numberOfSegments() {
+		return segments.length;
+	}
+
+	public LineSegment[] segments() {
+		return segments;
+	}
+}

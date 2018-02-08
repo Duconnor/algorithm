@@ -1,0 +1,17 @@
+import edu.princeton.cs.algs4.StdIn;
+
+public class Permutation {
+	public static void main(String[] args) {
+		int k;
+		k = StdIn.readInt();
+		RandomizedQueue<String> rq = new RandomizedQueue<String>();
+		while (!StdIn.isEmpty()) {
+			String s = StdIn.readString();
+			rq.enqueue(s);
+		}
+		for (int i = 0; i < k; i++) {
+			String s = rq.dequeue();
+			System.out.println(s);
+		}
+	}
+}

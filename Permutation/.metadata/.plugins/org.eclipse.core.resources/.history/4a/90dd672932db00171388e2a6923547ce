@@ -1,0 +1,54 @@
+import java.util.Iterator;
+
+public class RandomizedQueue <Item> implements Iterable<Item> {
+	private class Node{
+		private Item val;
+		private Node previous;
+		private Node next;
+	}
+	
+	private Node first;
+	private Node last;
+	private int count;
+	
+	// construct an empty randomized queue
+	public RandomizedQueue(){
+		first = new Node();
+		last = new Node();
+		first = null;
+		last = null;
+		count = 0;
+	}
+	
+	// is the randomized queue empty?
+	public boolean isEmpty() {
+		return (first==null);
+	}
+	
+	// return the number of items on the randomized queue
+	public int size() {
+		return count;
+	}
+	
+	// add the item
+	public void enqueue(Item item) {
+		if(item ==null)
+			throw new IllegalArgumentException("illegal argument");
+		Node newnode = new Node();
+		newnode.val = item;
+		newnode.next = null;
+		if(isEmpty()) {
+			newnode.previous = null;
+			last = newnode;
+			first = last;
+		}
+		else {
+			last.next = newnode;
+			newnode.previous = last;
+			last = newnode;
+		}
+		count++;
+	}
+	
+	
+}

@@ -1,0 +1,67 @@
+import edu.princeton.cs.algs4.*;
+import java.util.*;
+
+public class PercolationStats {
+	private double[] threshold;
+	private int trials;
+
+	// perform trials independent experiments on an n-by-n grid
+	public PercolationStats(int n, int trials) {
+		this.trials = trials;
+		threshold = new double[trials];
+		int row, col;
+		for (int i = 0; i < trials; i++) {
+			Percolation per = new Percolation(n);
+			while (!per.percolates()) {
+				do {
+					row = StdRandom.uniform(n);
+					col = StdRandom.uniform(n);
+				} while (per.isOpean(row, col));
+				per.open(row, col);
+			}
+			threshold[i] = (double)per.numberOfOpeanSites()/(double)n;
+		}
+	}
+	
+	//sample mean of percolation threshold
+	public double mean() {
+		return StdStats.mean(threshold);
+	}
+	
+	//sample standard deviation of percolation threshold
+	public double stddev() {
+		return StdStats.stddev(threshold);
+	}
+	
+	//low endpoint of 95% confidence interval
+	public double confidenceLo() {
+		double mea = mean();
+		double stdde = stddev();
+		return(mea-(1.96*stdde)/Math.sqrt(trials));
+	}
+	
+	//high endpoint of 95% confidence interval
+	public double confidenceHi() {
+		double mea = mean();
+		double stdde = stddev();
+		return (mea+(1.96*stdde)/Math.sqrt(trials));
+	}
+	
+	//test client
+	public static void main(String[] args) {
+		int n,T;
+		Scanner sc = new Scanner(System.in);
+		n = sc.nextInt();
+		T = sc.nextInt();
+		sc.close();
+		PercolationStats pers = new PercolationStats(n,T);
+		double mea,stdde,lo,hi;
+		mea = pers.mean();
+		stdde = pers.stddev();
+		lo = pers.confidenceLo();
+		hi = pers.confidenceHi();
+		System.out.println("mean = "+mea);
+		System.out.println("stddev ="+stdde);
+		System.out.println("95% confidence interval = ["+lo+","+hi+"]");
+	}
+}

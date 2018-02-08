@@ -1,0 +1,85 @@
+import java.util.Arrays;
+
+public class FastCollinearPoints {
+
+	private LineSegment[] segments;
+
+	// finds all line segments containing 4 or more points
+	public FastCollinearPoints(Point[] points) {
+		if (points == null)
+			throw new IllegalArgumentException("Illegal Argument");
+		for (int i = 0; i < points.length; i++)
+			if (points[i] == null)
+				throw new IllegalArgumentException("Illegal Argument");
+
+		LineSegment[] tempsegments = new LineSegment[points.length];
+		int number = 0;
+		Point[] temppoints = new Point[points.length];
+		for (int i = 0; i < points.length; i++)
+			temppoints[i] = points[i];
+		for (int i = 0; i < points.length; i++) {
+			Arrays.sort(temppoints, points[i].slopeOrder());
+			int count = 2;
+			int start = 1;
+			for (int j = 1, k = 2; k < temppoints.length; j++, k++) {
+				if (temppoints[j].slopeTo(points[i]) == temppoints[k].slopeTo(points[i]))
+					count++;
+				else {
+					if (count <= 3) {
+						start = k;
+						count = 2;
+					} else {
+						Point[] line = new Point[count];
+						line[0] = points[i];
+						for (int a = start, b = 1; a < k; a++, b++)
+							line[b] = temppoints[a];
+						Arrays.sort(line);
+						LineSegment ls = new LineSegment(line[0], line[line.length - 1]);
+						tempsegments[number] = ls;
+						number++;
+						start = k;
+						count = 2;
+					}
+				}
+			}
+		}
+		// delete the repeated segments
+		int length = 0;
+		for (; length < tempsegments.length; length++)
+			if (tempsegments[length] == null)
+				break;
+		String[] s = new String[length];
+		for (int i = 0; i < length; i++)
+			s[i] = tempsegments[i].toString();
+		for (int i = 0; i < length; i++) {
+			String s1 = tempsegments[i].toString();
+			int count = 0;
+			for (int j = 0; j < length; j++) {
+				if (s[j].compareTo(s1) == 0)
+					count++;
+				if (count == 2)
+					break;
+			}
+			if (count == 2) {
+				tempsegments[i] = tempsegments[length - 1];
+				s[i] = s[length - 1];
+				length--;
+				i--;
+			}
+		}
+		segments = new LineSegment[length];
+		for (int i = 0; i < length; i++)
+			segments[i] = tempsegments[i];
+	}
+
+	// the number of line segments
+	public int numberOfSegments() {
+		return segments.length;
+	}
+
+	// the line segments
+	public LineSegment[] segments() {
+		return segments;
+	}
+
+}

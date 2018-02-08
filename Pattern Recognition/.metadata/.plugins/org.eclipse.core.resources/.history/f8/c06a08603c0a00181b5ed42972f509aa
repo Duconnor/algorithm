@@ -1,0 +1,70 @@
+import java.util.Arrays;
+
+public class BruteCollinearPoints {
+	private LineSegment[] segments;
+
+	public BruteCollinearPoints(Point[] points) {
+		if (points == null)
+			throw new IllegalArgumentException("Illegal Argument");
+		for (int i = 0; i < points.length; i++)
+			if (points[i] == null)
+				throw new IllegalArgumentException("Illegal Argument");
+		LineSegment[] tempsegments = new LineSegment[1000000];
+		Point[] line = new Point[4];
+		int number = 0;
+		for (int a = 0; a < points.length; a++) {
+			for (int b = a + 1; b < points.length; b++) {
+				for (int c = b + 1; c < points.length; c++) {
+					for (int d = c + 1; d < points.length; d++) {
+						if ((points[a].slopeTo(points[b])) == (points[c].slopeTo(points[d]))
+								&& (points[c].slopeTo(points[b]) == points[a].slopeTo(points[d]))
+								&& (points[a].slopeTo(points[c]) == points[b].slopeTo(points[d]))) {
+							line[0] = points[a];
+							line[1] = points[b];
+							line[2] = points[c];
+							line[3] = points[d];
+							Arrays.sort(line);
+							LineSegment ls = new LineSegment(line[0], line[3]);
+							tempsegments[number] = ls;
+							number++;
+						}
+					}
+				}
+			}
+		}
+		int length = 0;
+		for (; length < tempsegments.length; length++)
+			if (tempsegments[length] == null)
+				break;
+		String[] s = new String[length];
+		for (int i = 0; i < length; i++)
+			s[i] = tempsegments[i].toString();
+		for (int i = 0; i < length; i++) {
+			String s1 = tempsegments[i].toString();
+			int count = 0;
+			for (int j = 0; j < length; j++) {
+				if (s[j].compareTo(s1) == 0)
+					count++;
+				if (count == 2)
+					break;
+			}
+			if (count == 2) {
+				tempsegments[i] = tempsegments[length - 1];
+				s[i] = s[length - 1];
+				length--;
+				i--;
+			}
+		}
+		segments = new LineSegment[length];
+		for (int i = 0; i < length; i++)
+			segments[i] = tempsegments[i];
+	}
+
+	public int numberOfSegments() {
+		return segments.length;
+	}
+
+	public LineSegment[] segments() {
+		return segments;
+	}
+}

@@ -1,0 +1,77 @@
+import edu.princeton.cs.algs4.WeightedQuickUnionUF;
+
+public class Percolation {
+    private final WeightedQuickUnionUF uf;
+    private boolean[][] grid;
+    private final int n;
+    private int count;
+
+    // create a n*n grid, with all sites blocked
+    public Percolation(int n) {
+        if (n <= 0)
+            throw new java.lang.IllegalArgumentException("illegal n");
+        uf = new WeightedQuickUnionUF(n * n + 2);
+        count = 0;
+        for (int i = 1; i < n + 1; i++) {
+            uf.union(0, i);
+            uf.union(n * n + 1, (n - 1) * n + i);
+        }
+        this.n = n;
+        grid = new boolean[n + 1][n + 1];
+        for (int i = 1; i < n + 1; i++)
+            for (int j = 1; j < n + 1; j++)
+                grid[i][j] = false;
+    }
+
+    private int transfer(int row, int col) {
+        return (row - 1) * n + col;
+    }
+
+    // open site (row,col)
+    public void open(int row, int col) {
+        if (row <= 0 || row > n)
+            throw new java.lang.IllegalArgumentException("row index i out of bounds");
+        if (col <= 0 || col > n)
+            throw new java.lang.IllegalArgumentException("col index j out of bounds");
+        if (!grid[row][col]) {
+            grid[row][col] = true;
+            count++;
+            if ((row - 1 >= 1) && grid[row - 1][col])
+                uf.union(transfer(row, col), transfer(row - 1, col));
+            if ((row + 1 < n + 1) && grid[row + 1][col])
+                uf.union(transfer(row, col), transfer(row + 1, col));
+            if ((col - 1 >= 1) && grid[row][col - 1])
+                uf.union(transfer(row, col), transfer(row, col - 1));
+            if ((col + 1 < n + 1) && grid[row][col + 1])
+                uf.union(transfer(row, col), transfer(row, col + 1));
+        }
+    }
+
+    // is site(row,col) open?
+    public boolean isOpen(int row, int col) {
+        if (row <= 0 || row > n)
+            throw new java.lang.IllegalArgumentException("row index i out of bounds");
+        if (col <= 0 || col > n)
+            throw new java.lang.IllegalArgumentException("col index j out of bounds");
+        return (grid[row][col]);
+    }
+
+    // is site(row,col) full?
+    public boolean isFull(int row, int col) {
+        if (row <= 0 || row > n)
+            throw new java.lang.IllegalArgumentException("row index i out of bounds");
+        if (col <= 0 || col > n)
+            throw new java.lang.IllegalArgumentException("col index j out of bounds");
+        return (isOpen(row, col) && uf.connected(0, transfer(row, col))&&);
+    }
+
+    // number of open sites
+    public int numberOfOpenSites() {
+        return count;
+    }
+
+    // does the system percolate?
+    public boolean percolates() {
+        return (uf.connected(0, n * n + 1) && numberOfOpenSites() != 0);
+    }
+}

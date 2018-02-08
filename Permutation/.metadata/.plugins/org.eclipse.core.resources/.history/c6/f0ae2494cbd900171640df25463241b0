@@ -1,0 +1,12 @@
+import java.util.Iterator;
+
+public class RandomizedQueue <Item> implements Iterable<Item> {
+	private class Node{
+		private Item val;
+		private Node previous;
+		private Node next;
+	}
+	
+	private Node first;
+	private int count;
+}

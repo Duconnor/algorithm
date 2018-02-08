@@ -1,0 +1,62 @@
+import java.util.Iterator;
+
+public class Deque<Item> implements Iterable<Item> {
+	private class Node {
+		private Item val;
+		private Node next;
+	}
+
+	private Node first;
+	private Node last;
+	private int number;
+
+	// construct an empty deque
+	public Deque() {
+		first = new Node();
+		last = new Node();
+		first = null;
+		last = null;
+		number = 0;
+	}
+
+	// is the deque empty?
+	public boolean isEmpty() {
+		return (first == null);
+	}
+
+	// return the number of items on the deque
+	public int size() {
+		return number;
+	}
+
+	// add the item to the front
+	public void addFirst(Item item) {
+		if (item == null)
+			throw new IllegalArgumentException("illegal argument");
+		Node newnode = new Node();
+		newnode.val = item;
+		newnode.next = first;
+		first = newnode;
+		if (isEmpty()) {
+			last = first;
+		}
+		number++;
+	}
+
+	// add the item to the end
+	public void addLast(Item item) {
+		if (item == null)
+			throw new IllegalArgumentException("illegal argument");
+		Node newnode = new Node();
+		newnode.val = item;
+		newnode.next = null;
+		if (isEmpty()) {
+			last = newnode;
+			first = last;
+		} else {
+			last.next = newnode;
+			last = newnode;
+		}
+		number++;
+	}
+}

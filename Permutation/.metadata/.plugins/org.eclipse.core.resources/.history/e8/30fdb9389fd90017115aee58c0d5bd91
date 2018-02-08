@@ -1,0 +1,105 @@
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+public class Deque<Item> implements Iterable<Item> {
+	private class Node {
+		private Item val;
+		private Node next;
+		private Node previous;
+	}
+
+	private class ListIterator implements Iterator<Item> {
+		private Node ite = first;
+
+		public boolean hasNext() {
+			return (ite != null);
+		}
+
+		public Item next() {
+			Item item = ite.val;
+			ite = ite.next;
+			return item;
+		}
+	}
+
+	private Node first;
+	private Node last;
+	private int number;
+
+	// construct an empty deque
+	public Deque() {
+		first = new Node();
+		last = new Node();
+		first = null;
+		last = null;
+		number = 0;
+	}
+
+	// is the deque empty?
+	public boolean isEmpty() {
+		return (first == null);
+	}
+
+	// return the number of items on the deque
+	public int size() {
+		return number;
+	}
+
+	// add the item to the front
+	public void addFirst(Item item) {
+		if (item == null)
+			throw new IllegalArgumentException("illegal argument");
+		Node newnode = new Node();
+		newnode.val = item;
+		newnode.next = first;
+		newnode.previous = null;
+		first = newnode;
+		if (isEmpty()) {
+			last = first;
+		}
+		number++;
+	}
+
+	// add the item to the end
+	public void addLast(Item item) {
+		if (item == null)
+			throw new IllegalArgumentException("illegal argument");
+		Node newnode = new Node();
+		newnode.val = item;
+		newnode.next = null;
+		if (isEmpty()) {
+			newnode.previous = null;
+			last = newnode;
+			first = last;
+		} else {
+			newnode.previous = last;
+			last.next = newnode;
+			last = newnode;
+		}
+		number++;
+	}
+
+	// remove and return the item from the front
+	public Item removeFirst() {
+		if (isEmpty())
+			throw new NoSuchElementException("deque is empty");
+		Item item = first.val;
+		first = first.next;
+		return item;
+	}
+
+	// remove and return the item from the end
+	public Item removeLast() {
+		if (isEmpty())
+			throw new NoSuchElementException("deque is empty");
+		Item item = last.val;
+		last = last.previous;
+		return item;
+	}
+
+	// return an iterator over items in order from front to end
+	public Iterator<Item> iterator() {
+		return new ListIterator();
+	}
+
+}
