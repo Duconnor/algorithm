@@ -1,0 +1,29 @@
+import edu.princeton.cs.algs4.MinPQ;
+
+public class Solver {
+
+	private class SearchNode {
+		private Board board; // present board
+		private int moves; // number of moves to reach this board
+		private SearchNode predecessor; // previous SearchNode
+
+		public SearchNode(Board board, int moves, SearchNode predecessor) {
+			this.board = board;
+			this.moves = moves;
+			this.predecessor = predecessor;
+		}
+		
+		// comparator
+		
+	}
+
+	// find a solution to the initial board
+	public Solver(Board initial) {
+		if (initial == null)
+			throw new java.lang.IllegalArgumentException("Illegal Argument");
+		MinPQ<SearchNode> minpq = new MinPQ<SearchNode>();
+		int moves = 0;
+		SearchNode node = new SearchNode(initial, moves, null);
+		minpq.insert(node);
+	}
+}

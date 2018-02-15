@@ -1,0 +1,10 @@
+import edu.princeton.cs.algs4.MinPQ;
+
+public class Solver {
+	// find a solution to the initial board
+	public Solver(Board initial) {
+		if(initial==null)
+			throw new java.lang.IllegalArgumentException("Illegal Argument");
+		
+	}
+}

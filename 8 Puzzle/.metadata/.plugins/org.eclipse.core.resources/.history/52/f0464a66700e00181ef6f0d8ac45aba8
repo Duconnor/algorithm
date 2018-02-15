@@ -1,0 +1,159 @@
+import java.util.Scanner;
+import java.util.Stack;
+
+public class Board {
+
+	private int[][] board;
+	private int dimension;
+	private int hammingnumber;
+	private int manhattandistance;
+
+	// construct a board from an n-by-n array of blocks
+	public Board(int[][] blocks) {
+		dimension = blocks.length;
+		hammingnumber = 0;
+		manhattandistance = 0;
+		for (int i = 0; i < dimension; i++) {
+			for (int j = 0; j < dimension; j++) {
+				board[i][j] = blocks[i][j];
+				// number of blocks out of place
+				if (board[i][j] != 0 && board[i][j] != i * dimension + j)
+					hammingnumber++;
+				// distance
+				if (board[i][j] != 0) {
+					int x = (board[i][j] - 1) / dimension;
+					int y = (board[i][j] - 1) % dimension;
+					manhattandistance += Math.abs(x - i) + Math.abs(y - j);
+				}
+			}
+		}
+	}
+
+	// board dimension n
+	public int dimension() {
+		return dimension;
+	}
+
+	// number of blocks out of place
+	public int hamming() {
+		return hammingnumber;
+	}
+
+	// sum of Manhattan distances between blocks and goal
+	public int manhattan() {
+		return manhattandistance;
+	}
+
+	// is this board the goal board?
+	public boolean isGoal() {
+		return (hammingnumber == 0);
+	}
+
+	// a board that is obtained by exchanging any pair of blocks
+	public Board twin() {
+		int[][] blocks = new int[dimension][dimension];
+		for (int i = 0; i < dimension; i++)
+			for (int j = 0; j < dimension; j++)
+				blocks[i][j] = board[i][j];
+		if (dimension == 1)
+			return new Board(blocks);
+		int temp = blocks[0][0];
+		blocks[0][0] = blocks[0][1];
+		blocks[0][1] = temp;
+		return new Board(blocks);
+	}
+
+	// does this board equal y?
+	public boolean euqals(Object y) {
+		if (this == y)
+			return true;
+		if (y == null)
+			return false;
+		if (this.getClass() != y.getClass())
+			return false;
+		Board that = (Board) y;
+		if (this.dimension != that.dimension)
+			return false;
+		if (this.hammingnumber != that.hammingnumber)
+			return false;
+		if (this.manhattandistance != that.manhattandistance)
+			return false;
+		for (int i = 0; i < this.dimension; i++)
+			for (int j = 0; j < this.dimension; j++)
+				if (this.board[i][j] != that.board[i][j])
+					return false;
+		return true;
+	}
+
+	// all neighboring boards
+	public Iterable<Board> neighbors() {
+		Stack<Board> neighbors = new Stack<Board>();
+		int xblank = 0, yblank = 0;
+		int[][] tempboard = new int[dimension][dimension];
+		for (int i = 0; i < dimension; i++)
+			for (int j = 0; j < dimension; j++) {
+				tempboard[i][j] = board[i][j];
+				if (board[i][j] == 0) {
+					xblank = i;
+					yblank = j;
+				}
+			}
+		// left
+		if (yblank != 0) {
+			tempboard[xblank][yblank] = tempboard[xblank][yblank - 1];
+			tempboard[xblank][yblank - 1] = 0;
+			Board board = new Board(tempboard);
+			neighbors.push(board);
+		}
+		// right
+		if (yblank != dimension - 1) {
+			tempboard[xblank][yblank] = tempboard[xblank][yblank + 1];
+			tempboard[xblank][yblank + 1] = 0;
+			Board board = new Board(tempboard);
+			neighbors.push(board);
+		}
+		// up
+		if (xblank != 0) {
+			tempboard[xblank][yblank] = tempboard[xblank - 1][yblank];
+			tempboard[xblank - 1][yblank] = 0;
+			Board board = new Board(tempboard);
+			neighbors.push(board);
+		}
+		// down
+		if (xblank != dimension - 1) {
+			tempboard[xblank][yblank] = tempboard[xblank + 1][yblank];
+			tempboard[xblank + 1][yblank] = 0;
+			Board board = new Board(tempboard);
+			neighbors.push(board);
+		}
+		return neighbors();
+	}
+
+	// string representation of this board
+	public String toString() {
+		String s = Integer.toString(dimension) + "/n";
+		for (int i = 0; i < dimension; i++)
+			for (int j = 0; j < dimension; j++) {
+				String number = Integer.toString(board[i][j]);
+				s += " " + number;
+				if (j == dimension - 1)
+					s += "/n";
+			}
+		return s;
+	}
+
+	// unit test
+	public static void main(String[] args) {
+		int dimension = 0;
+		Scanner sc = new Scanner(System.in);
+		dimension = sc.nextInt();
+		int[][] blocks = new int[dimension][dimension];
+		for (int i = 0; i < dimension; i++)
+			for (int j = 0; j < dimension; j++)
+				blocks[i][j] = sc.nextInt();
+		sc.close();
+		Board board = new Board(blocks);
+		String s = board.toString();
+		System.out.println(s);
+	}
+}
