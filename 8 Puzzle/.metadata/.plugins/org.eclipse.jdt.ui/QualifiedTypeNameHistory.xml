@@ -9,4 +9,5 @@
 <fullyQualifiedTypeName name="edu.princeton.cs.algs4.In"/>
 <fullyQualifiedTypeName name="edu.princeton.cs.algs4.StdOut"/>
 <fullyQualifiedTypeName name="java.util.LinkedList"/>
+<fullyQualifiedTypeName name="java.lang.StringBuilder"/>
 </qualifiedTypeNameHistroy>

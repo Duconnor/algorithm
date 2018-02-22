@@ -5,50 +5,40 @@ import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.StdOut;
 
-public class Solver {
+public final class Solver {
 
-	private SearchNode goal; // the goal node
-	private Board initial;
-	private LinkedList<Board> solution;
-	private boolean flag;
+	private final SearchNode goal; // the goal node
+	private final LinkedList<Board> solution;
 
 	private class SearchNode {
-		private Board board; // present board
-		private int moves; // number of moves to reach this board
-		private SearchNode predecessor; // previous SearchNode
+		private final Board board; // present board
+		private final int moves; // number of moves to reach this board
+		private final SearchNode predecessor; // previous SearchNode
+		private final boolean istwin; // true for twin
+		private final int hammingpriority; // the hamming priority function
+		private final int manhattanpriority;
 
 		private class ByHamming implements Comparator<SearchNode> {
 
 			public int compare(SearchNode a, SearchNode b) {
-				int apriority = a.moves + a.board.hamming();
-				int bpriority = a.moves + a.board.hamming();
-				if (apriority < bpriority)
-					return -1;
-				else if (apriority > bpriority)
-					return +1;
-				else
-					return 0;
+				return a.hammingpriority - b.hammingpriority;
 			}
 		}
 
 		private class ByManhattan implements Comparator<SearchNode> {
 
 			public int compare(SearchNode a, SearchNode b) {
-				int apriority = a.moves + a.board.manhattan();
-				int bpriority = b.moves + b.board.manhattan();
-				if (apriority < bpriority)
-					return -1;
-				else if (apriority > bpriority)
-					return +1;
-				else
-					return 0;
+				return a.manhattanpriority - b.manhattanpriority;
 			}
 		}
 
-		public SearchNode(Board board, int moves, SearchNode predecessor) {
+		public SearchNode(Board board, int moves, SearchNode predecessor, boolean istwin) {
 			this.board = board;
 			this.moves = moves;
 			this.predecessor = predecessor;
+			this.istwin = istwin;
+			hammingpriority = board.hamming() + moves;
+			manhattanpriority = board.manhattan() + moves;
 		}
 
 		// comparator
@@ -66,64 +56,77 @@ public class Solver {
 	public Solver(Board initial) {
 		if (initial == null)
 			throw new java.lang.IllegalArgumentException("Illegal Argument");
-		solution = new LinkedList<Board>();
-		this.initial = initial;
-		goal = null;
+		int type = 0; // 0 for unknown, 1 for solvable, -1 for unsolvable
+
+		SearchNode node = new SearchNode(initial, 0, null, false);
+		MinPQ<SearchNode> mpq = new MinPQ<SearchNode>(node.manhattanPriority());
+		mpq.insert(new SearchNode(initial, 0, null, false));
+		mpq.insert(new SearchNode(initial.twin(), 0, null, true));
+
+		// loop
+
+		while (type == 0) {
+			node = mpq.delMin();
+			// is goal?
+			// if yes, then break the loop
+			if (node.board.isGoal() && node.istwin) {
+				type = -1;
+				break;
+			} else if (node.board.isGoal() && !node.istwin) {
+				type = 1;
+				break;
+			}
+
+			// here means not the goal
+			// insert new nodes on the Priority Queue
+			for (Board board : node.board.neighbors()) {
+				// if tempnode's board is the same as the previous search node of node
+				// do not insert it in
+				if (node.predecessor != null && node.predecessor.board.equals(board))
+					continue;
+				// now it is guaranteed that it is not the same as the previous one
+				// so just insert it in
+				SearchNode tempnode = new SearchNode(board, node.moves + 1, node, node.istwin);
+				mpq.insert(tempnode);
+			}
+		}
+
+		// now we find the goal
+		// if we find the goal, initialize the goal
+		// else just set goal to null
+
+		if (type == 1)
+			goal = new SearchNode(node.board, node.moves, node.predecessor, node.istwin);
+		else
+			goal = null;
+
+		// if goal is not null, we the backtrack all the way back to find the solution
+
+		if (goal != null) {
+			solution = new LinkedList<Board>();
+			SearchNode previous = goal.predecessor;
+			SearchNode present = goal;
+			solution.addFirst(present.board);
+			while (previous != null) {
+				present = previous;
+				previous = previous.predecessor;
+				solution.addFirst(present.board);
+			}
+		} else
+			solution = null;
 	}
 
 	// is the initial board solvable?
 	public boolean isSolvable() {
-		int type = 0;// 0 for unknown, 1 for solvable, -1 for unsolvable
-		SearchNode node1 = new SearchNode(initial, 0, null);// node1 is for the initial board
-		SearchNode node2 = new SearchNode(initial.twin(), 0, null);// node2 is for the twin board
-		// pq1 is for the initial board
-		// MinPQ<SearchNode> pq1 = new MinPQ<SearchNode>(node1.manhattanPriority());
-		MinPQ<SearchNode> pq1 = new MinPQ<SearchNode>(node1.hammingPriority());
-		// pq2 is for the twin board
-		// MinPQ<SearchNode> pq2 = new MinPQ<SearchNode>(node2.manhattanPriority());
-		MinPQ<SearchNode> pq2 = new MinPQ<SearchNode>(node2.hammingPriority());
-		pq1.insert(node1);
-		pq2.insert(node2);
-		node1 = pq1.delMin();
-		node2 = pq2.delMin();
-		if (node1.board.isGoal()) {
-			goal = node1;
-			type = 1;
-		} else if (node2.board.isGoal())
-			type = -1;
-		while (type == 0) {
-			for (Board b : node1.board.neighbors()) {
-				SearchNode neighbors = new SearchNode(b, node1.moves + 1, node1);
-				if (!neighbors.board.equals(neighbors.predecessor.board))
-					pq1.insert(neighbors);
-			}
-			node1 = pq1.delMin();
-			if (node1.board.isGoal()) {
-				type = 1;
-				goal = node1;
-				break;
-			}
-			for (Board b : node2.board.neighbors()) {
-				SearchNode neighbors = new SearchNode(b, node2.moves + 1, node2);
-				if (!neighbors.board.equals(neighbors.predecessor.board))
-					pq2.insert(neighbors);
-			}
-			node2 = pq2.delMin();
-			if (node2.board.isGoal())
-				type = -1;
-		}
-		if (type == 1) {
-			flag = true;
+		if (goal != null)
 			return true;
-		} else {
-			flag = false;
+		else
 			return false;
-		}
 	}
 
 	// min number of moves to solve initial board; -1 if unsolvable
 	public int moves() {
-		if (flag)
+		if (goal != null)
 			return goal.moves;
 		else
 			return -1;
@@ -131,14 +134,6 @@ public class Solver {
 
 	// sequence of boards in a shortest solution; null if unsolvable
 	public Iterable<Board> solution() {
-		SearchNode previous = goal.predecessor;
-		SearchNode present = goal;
-		solution.addFirst(present.board);
-		while (previous != null) {
-			present = previous;
-			previous = previous.predecessor;
-			solution.addFirst(present.board);
-		}
 		return solution;
 	}
 
@@ -158,7 +153,7 @@ public class Solver {
 		// solve the puzzle
 		Solver solver = new Solver(initial);
 
-		// print solution to stand`ard output
+		// print solution to standard output
 		if (!solver.isSolvable())
 			StdOut.println("No solution possible");
 		else {
