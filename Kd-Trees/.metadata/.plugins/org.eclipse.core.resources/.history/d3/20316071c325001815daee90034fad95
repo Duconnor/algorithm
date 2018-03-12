@@ -1,0 +1,144 @@
+import edu.princeton.cs.algs4.Point2D;
+import edu.princeton.cs.algs4.RectHV;
+import java.util.LinkedList;
+
+public class KdTree {
+
+	private static class Node {
+		private Point2D point;
+		private RectHV rectangle;
+		private Node left;
+		private Node right;
+	}
+
+	private Node root;
+	private int size;
+
+	// construct an empty set of points
+	public KdTree() {
+		root = null;
+		size = 0;
+	}
+
+	// is the setEmpty?
+	public boolean isEmpty() {
+		return (size == 0);
+	}
+
+	// numbers of points in the set
+	public int size() {
+		return size;
+	}
+
+	// add the point to the set (if it is not already in the set)
+	public void insert(Point2D p) {
+		Node node = root, preNode = null;
+		int count = 0, where = 0; // if we go left, then where is -1, if we go right, then where is 1
+		while (node != null) {
+			if (node.point.equals(p))
+				// check whether the point to be inserted is already in the set
+				return;
+			if (count == 0) {
+				// even number of level, use x-coordinate
+				if (node.point.x() >= p.x()) {
+					// p has smaller value, go left
+					preNode = node;
+					node = node.left;
+					where = -1;
+					count++; // update count
+				} else {
+					// otherwise, go right
+					preNode = node;
+					node = node.right;
+					where = 1;
+					count++; // update count
+				}
+			} else if (count == 1) {
+				// odd number of level, use y-coordinate
+				if (node.point.y() >= p.y()) {
+					// p has smaller value, go left
+					preNode = node;
+					node = node.left;
+					where = -1;
+					count--;
+				} else {
+					// otherwise, go right
+					preNode = node;
+					node = node.right;
+					where = 1;
+					count--;
+				}
+			}
+		}
+		// now we find the position to insert p
+		// construct a new node
+		node = new Node();
+		node.point = p;
+		node.left = null;
+		node.right = null;
+		if (where == 0)
+			node.rectangle = new RectHV(0.0, 0.0, 1.0, 1.0);
+		else if (count == 0) {
+			if (where == -1)
+				node.rectangle = new RectHV(preNode.rectangle.xmin(), preNode.rectangle.ymin(),
+						preNode.rectangle.xmax(), preNode.point.y());
+			else
+				node.rectangle = new RectHV(preNode.rectangle.xmin(),preNode.point.y(),
+						preNode.rectangle.xmax(),preNode.rectangle.ymax());
+		}
+		else if(count == 1) {
+			if(where == -1)
+				node.rectangle = new RectHV(preNode.rectangle.xmin(),preNode.rectangle.ymin(),
+						preNode.point.x(),preNode.rectangle.ymax());
+			else
+				node.rectangle = new RectHV(preNode.point.x(),preNode.rectangle.ymin(),
+						preNode.rectangle.xmax(),preNode.rectangle.ymax());
+		}
+		// construction complete
+		
+		if (where == 0)
+			root = node;
+		else if (where == -1)
+			preNode.left = node;
+		else
+			preNode.right = node;
+	}
+
+	// does the set contains point p
+	public boolean contains(Point2D p) {
+		Node node = root;
+		int count = 0;
+		while (node != null) {
+			if (node.point.equals(p))
+				// check whether the point to be inserted is already in the set
+				return true;
+			if (count == 0) {
+				// even number of level, use x-coordinate
+				if (node.point.x() >= p.x()) {
+					// p has smaller value, go left
+					node = node.left;
+					count++; // update count
+				} else {
+					// otherwise, go right
+					node = node.right;
+					count++; // update count
+				}
+			} else if (count == 1) {
+				// odd number of level, use y-coordinate
+				if (node.point.y() >= p.y()) {
+					// p has smaller value, go left
+					node = node.left;
+					count--;
+				} else {
+					// otherwise, go right
+					node = node.right;
+					count--;
+				}
+			}
+		}
+		return false;
+	}
+
+	// draw all points to standard draw
+	public void draw
+}

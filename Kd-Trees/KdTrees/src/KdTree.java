@@ -1,0 +1,243 @@
+import edu.princeton.cs.algs4.Point2D;
+import edu.princeton.cs.algs4.RectHV;
+import edu.princeton.cs.algs4.StdDraw;
+import java.util.LinkedList;
+
+public class KdTree {
+
+	private static class Node {
+		private Point2D point;
+		private RectHV rectangle;
+		private Node left;
+		private Node right;
+	}
+
+	private Node root;
+	private int size;
+
+	// construct an empty set of points
+	public KdTree() {
+		root = null;
+		size = 0;
+	}
+
+	// is the setEmpty?
+	public boolean isEmpty() {
+		return (size == 0);
+	}
+
+	// numbers of points in the set
+	public int size() {
+		return size;
+	}
+
+	// add the point to the set (if it is not already in the set)
+	public void insert(Point2D p) {
+		if (p == null)
+			throw new java.lang.IllegalArgumentException("null argument");
+		Node node = root, preNode = null;
+		int count = 0, where = 0; // if we go left, then where is -1, if we go right, then where is 1
+		while (node != null) {
+			if (node.point.equals(p))
+				// check whether the point to be inserted is already in the set
+				return;
+			if (count == 0) {
+				// even number of level, use x-coordinate
+				if (node.point.x() >= p.x()) {
+					// p has smaller value, go left
+					preNode = node;
+					node = node.left;
+					where = -1;
+					count++; // update count
+				} else {
+					// otherwise, go right
+					preNode = node;
+					node = node.right;
+					where = 1;
+					count++; // update count
+				}
+			} else if (count == 1) {
+				// odd number of level, use y-coordinate
+				if (node.point.y() >= p.y()) {
+					// p has smaller value, go left
+					preNode = node;
+					node = node.left;
+					where = -1;
+					count--;
+				} else {
+					// otherwise, go right
+					preNode = node;
+					node = node.right;
+					where = 1;
+					count--;
+				}
+			}
+		}
+		// now we find the position to insert p
+		// construct a new node
+		node = new Node();
+		node.point = p;
+		node.left = null;
+		node.right = null;
+		if (where == 0)
+			node.rectangle = new RectHV(0.0, 0.0, 1.0, 1.0);
+		else if (count == 0) {
+			if (where == -1)
+				node.rectangle = new RectHV(preNode.rectangle.xmin(), preNode.rectangle.ymin(),
+						preNode.rectangle.xmax(), preNode.point.y());
+			else
+				node.rectangle = new RectHV(preNode.rectangle.xmin(), preNode.point.y(), preNode.rectangle.xmax(),
+						preNode.rectangle.ymax());
+		} else if (count == 1) {
+			if (where == -1)
+				node.rectangle = new RectHV(preNode.rectangle.xmin(), preNode.rectangle.ymin(), preNode.point.x(),
+						preNode.rectangle.ymax());
+			else
+				node.rectangle = new RectHV(preNode.point.x(), preNode.rectangle.ymin(), preNode.rectangle.xmax(),
+						preNode.rectangle.ymax());
+		}
+		// construction complete
+
+		size++;
+
+		if (where == 0)
+			root = node;
+		else if (where == -1)
+			preNode.left = node;
+		else
+			preNode.right = node;
+	}
+
+	// does the set contains point p
+	public boolean contains(Point2D p) {
+		if (p == null)
+			throw new java.lang.IllegalArgumentException("null argument");
+		Node node = root;
+		int count = 0;
+		while (node != null) {
+			if (node.point.equals(p))
+				// check whether the point to be inserted is already in the set
+				return true;
+			if (count == 0) {
+				// even number of level, use x-coordinate
+				if (node.point.x() >= p.x()) {
+					// p has smaller value, go left
+					node = node.left;
+					count++; // update count
+				} else {
+					// otherwise, go right
+					node = node.right;
+					count++; // update count
+				}
+			} else if (count == 1) {
+				// odd number of level, use y-coordinate
+				if (node.point.y() >= p.y()) {
+					// p has smaller value, go left
+					node = node.left;
+					count--;
+				} else {
+					// otherwise, go right
+					node = node.right;
+					count--;
+				}
+			}
+		}
+		return false;
+	}
+
+	// draw all points to standard draw
+	public void draw() {
+		LinkedList<Node> list = new LinkedList<Node>();
+		list.add(root);
+		if (root == null)
+			return;
+		int level = 0; // 0 for even level, 1 for odd level (view root as level 0)
+		while (!list.isEmpty()) {
+			LinkedList<Node> nextList = new LinkedList<Node>();
+			for (Node node : list) {
+				// draw the point
+				StdDraw.setPenColor(StdDraw.BLACK);
+				StdDraw.setPenRadius(0.01);
+				node.point.draw();
+
+				// draw the split line
+				if (level == 0) {
+					// even level is vertical line
+					StdDraw.setPenColor(StdDraw.RED);
+					StdDraw.setPenRadius();
+					StdDraw.line(node.point.x(), node.rectangle.ymin(), node.point.x(), node.rectangle.ymax());
+				} else {
+					// odd level is horizontal line
+					StdDraw.setPenColor(StdDraw.BLUE);
+					StdDraw.setPenRadius();
+					StdDraw.line(node.rectangle.xmin(), node.point.y(), node.rectangle.xmax(), node.point.y());
+				}
+
+				// put its subtree node into newList
+				if (node.left != null)
+					nextList.add(node.left);
+				if (node.right != null)
+					nextList.add(node.right);
+			}
+			if (level == 0)
+				level = 1;
+			else
+				level = 0;
+			list.clear();
+			list.addAll(nextList);
+		}
+	}
+
+	// all points that are inside the rectangle (or on the boundary)
+	public Iterable<Point2D> range(RectHV rect) {
+		if (rect == null)
+			throw new java.lang.IllegalArgumentException("null argument");
+		LinkedList<Node> list = new LinkedList<Node>();
+		LinkedList<Point2D> result = new LinkedList<Point2D>();
+		list.add(root);
+		if (root == null)
+			return result;
+		while (!list.isEmpty()) {
+			LinkedList<Node> nextList = new LinkedList<Node>();
+			for (Node node : list) {
+				if (rect.contains(node.point))
+					result.add(node.point);
+				if (node.left != null && rect.intersects(node.left.rectangle))
+					nextList.add(node.left);
+				if (node.right != null && rect.intersects(node.right.rectangle))
+					nextList.add(node.right);
+			}
+			list.clear();
+			list.addAll(nextList);
+		}
+		return result;
+	}
+
+	// a nearest neighbor in the set to point p; null if the set is empty
+	public Point2D nearest(Point2D p) {
+		if (p == null)
+			throw new java.lang.IllegalArgumentException("null argument");
+		LinkedList<Node> list = new LinkedList<Node>();
+		if (root == null)
+			return null;
+		list.add(root);
+		double min = Double.POSITIVE_INFINITY;
+		Point2D nearestPoint = null;
+		while (!list.isEmpty()) {
+			LinkedList<Node> nextList = new LinkedList<Node>();
+			for (Node node : list) {
+				if (node.point.distanceSquaredTo(p) < min) {
+					nearestPoint = node.point;
+					min = node.point.distanceSquaredTo(p);
+				}
+				if (node.left != null && node.left.rectangle.distanceSquaredTo(p) < min)
+					nextList.add(node.left);
+				if (node.right != null && node.right.rectangle.distanceSquaredTo(p) < min)
+					nextList.add(node.right);
+			}
+			list.clear();
+			list.addAll(nextList);
+		}
+		return nearestPoint;
+	}
+}
